@@ -1,0 +1,75 @@
+module day1.
+
+main =>
+    println("Part 1"),
+    day1a(),
+    println("Part 2"),
+    day1b().
+
+day1a =>
+    File = "inputs/day1a.txt",
+    Answer = sum([calibration_value(Line) : Line in read_file_lines(File)]),
+    println(Answer).
+
+calibration_value("") = 0.
+calibration_value(String)=C =>
+    F = not_set,
+    L = not_set,
+    foreach (D in String, digit(D))
+        if F == not_set then
+            F := D
+        end,
+        L := D
+    end,
+    C = to_int(F) * 10 + to_int(L).
+
+
+day1b =>
+    File = "inputs/day1a.txt",
+    Answer = sum([corrected_calibration_value(Line) : Line in read_file_lines(File)]),
+    println(Answer).
+
+private
+corrected_calibration_value("") = 0.
+corrected_calibration_value(Line)=C =>
+    {First, Last} = find_first_and_last_digits(Line),
+    C = to_int(First) * 10 + to_int(Last).
+
+private
+find_first_and_last_digits(Line) = find_first_and_last_digits(Line, not_set, not_set).
+
+private
+find_first_and_last_digits([], First, Last)=C => C={First, Last}.
+find_first_and_last_digits([D|Rest], First, Last)=C, digit(D) =>  
+    if First == not_set then
+        First := D
+    end,
+    Last := D,
+    C=find_first_and_last_digits(Rest, First, Last).
+find_first_and_last_digits(String@[_|Rest], First, Last)=C, starts_with_number(String, N) =>
+    if First == not_set then
+        First := N
+    end,
+    Last := N,
+    C=find_first_and_last_digits(Rest, First, Last).
+find_first_and_last_digits([_|Rest], First, Last)=C =>
+    C=find_first_and_last_digits(Rest, First, Last).
+
+private
+starts_with_number([], _) => false.
+starts_with_number(String, N) =>
+    Numbers = new_map(["one"='1', "two"='2', "three"='3',
+                       "four"='4', "five"='5', "six"='6',
+                       "seven"='7', "eight"='8', "nine"='9']),
+    member(Number, Numbers.keys()),
+    if starts_with(String, Number) then
+        N = get(Numbers, Number)
+    else
+        false
+    end.
+
+private
+starts_with(_, []) => true.
+starts_with([C|RestOfString], [C|RestOfPattern]) => starts_with(RestOfString, RestOfPattern).
+starts_with(_, _) => false.
+
