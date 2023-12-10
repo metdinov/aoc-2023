@@ -1,0 +1,75 @@
+module day2.
+
+import util.
+
+main =>
+    println("Part 1"),
+    day2a().
+%     println("Part 2"),
+%     day2b().
+
+day2a =>
+    File = "inputs/day2a.txt",
+    List = [game_id(Line) : Line in read_file_lines(File), valid_game(Line)],
+    Answer = sum(List),
+    println(Answer).
+
+day2b =>
+    File = "inputs/day2a.txt",
+    List = [power(Set) : Line in read_file_lines(File), min_cubes(Line, Set)],
+    Answer = sum(List),
+    println(Answer).
+
+game_id(['G',a,m,e,' ' | Rest])=G => G=parse_first_number(Rest).
+
+parse_first_number(String) = parse_first_number(String, 0).
+parse_first_number([D | Rest], Acc)=P, digit(D) => P=parse_first_number(Rest, Acc * 10 + to_int(D)).
+parse_first_number(_, Acc) = Acc.
+
+valid_game(Game) =>
+    [_, [' '|Rest]] = split(Game, ":"),
+    Sets = map(parse_set, split(Rest, ";")),
+    true = all(map(less_than_max, Sets)).
+
+parse_set(Set)=S =>
+    S = new_map(),
+    foreach (Draw in split(Set, ","))
+        [Q, Color] = split(Draw, " "),
+        put(S, Color, to_int(Q))
+    end.
+
+less_than_max(Set)=L =>
+    AvailableCubes = new_map(["red"=12, "green"=13, "blue"=14]),
+
+    foreach (Color=Q in Set)
+        CurrentQ = get(AvailableCubes, Color),
+        put(AvailableCubes, Color, CurrentQ - to_int(Q))
+    end,
+    L=all(map(non_negative, AvailableCubes.values())).
+
+
+non_negative(Q)=B, Q >= 0 => B=true.
+non_negative(_) = false.
+
+all([]) = true.
+all([Cond | Rest])=A, Cond => A=all(Rest).
+all(_) = false.
+
+min_cubes(Game, Set) =>
+    [_, [' '|Rest]] = split(Game, ":"),
+    Sets = map(parse_set, split(Rest, ";")),
+    Set = min_set(Sets).
+
+min_set(Sets)=S =>
+    MinSet = new_map(),
+    foreach (Set in Sets)
+        foreach (Color=Q in Set)
+            CurrentQ = get(MinSet, Color, 0),
+            if CurrentQ < Q then
+                put(MinSet, Color, Q)
+            end
+        end
+    end,
+    S = MinSet.
+    
+power(Sets) = fold(*, 1, Sets.values()).
